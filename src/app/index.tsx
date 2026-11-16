@@ -1,45 +1,34 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { initialState, pickNext, recordAnswer, State } from './src/scheduler';
-import { Gender, WORDS_BY_KEY, withIndefinite } from './src/words';
+import { initialState, pickNext, recordAnswer, State } from '../scheduler';
+import { useQuizState } from '../useQuizState';
+import { Gender, WORDS, WORDS_BY_KEY, withIndefinite } from '../words';
 
 const STORAGE_KEY = 'fr-genre-state-v1';
+const WORD_KEYS = WORDS.map((w) => w.word);
+const WORD_KEY_SET: ReadonlySet<string> = new Set(WORD_KEYS);
 const CORRECT_ADVANCE_MS = 700;
 
 type Feedback = { correct: boolean } | null;
 
-export default function App() {
-  const [state, setState] = useState<State | null>(null);
+export default function GenderScreen() {
+  const [state, setState] = useQuizState(STORAGE_KEY, WORD_KEY_SET);
   const [current, setCurrent] = useState<string>('');
   const [feedback, setFeedback] = useState<Feedback>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load saved progress.
+  // Pick the first card once progress has loaded.
   useEffect(() => {
-    (async () => {
-      let loaded = initialState;
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (raw) loaded = { ...initialState, ...JSON.parse(raw) };
-      } catch {}
-      // Drop review entries for words no longer in the list.
-      loaded.review = Object.fromEntries(
-        Object.entries(loaded.review).filter(([w]) => w in WORDS_BY_KEY),
-      );
-      setState(loaded);
-      setCurrent(pickNext(loaded));
-    })();
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, []);
+    if (state && !current) setCurrent(pickNext(state, WORD_KEYS));
+  }, [state, current]);
 
-  // Save whenever progress changes.
-  useEffect(() => {
-    if (state) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
-  }, [state]);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
 
   if (!state || !current) return <View style={styles.container} />;
 
@@ -50,7 +39,7 @@ export default function App() {
   const next = (s: State) => {
     if (timer.current) clearTimeout(timer.current);
     setFeedback(null);
-    setCurrent(pickNext(s, current));
+    setCurrent(pickNext(s, WORD_KEYS, current));
   };
 
   const guess = (g: Gender) => {
@@ -133,7 +122,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 64, paddingBottom: 48, paddingHorizontal: 24 },
+  container: { flex: 1, paddingTop: 64, paddingBottom: 24, paddingHorizontal: 24 },
   header: { flexDirection: 'row', justifyContent: 'space-between' },
   stat: { fontSize: 16, color: '#555' },
   card: { flex: 1, alignItems: 'center', justifyContent: 'center' },
