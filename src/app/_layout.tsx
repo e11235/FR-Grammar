@@ -26,6 +26,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Genre',
+          // The default icon wrapper is only ~24–31px wide, which clips "le/la".
+          tabBarIconStyle: { width: 48 },
           tabBarIcon: ({ color }) => <TabGlyph label="le/la" color={color} />,
         }}
       />
