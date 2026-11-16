@@ -1,8 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Sun, SkyStrip } from '../components/Decor';
 import { initialState, pickNext, recordAnswer, State } from '../scheduler';
 import { useQuizState } from '../useQuizState';
+import { colors, paperShadow } from '../theme';
 import { Gender, WORDS, WORDS_BY_KEY, withIndefinite } from '../words';
 
 const STORAGE_KEY = 'fr-genre-state-v1';
@@ -64,13 +66,14 @@ export default function GenderScreen() {
       },
     ]);
 
-  const bg = feedback ? (feedback.correct ? '#e7f7ec' : '#fdecec') : '#fff';
+  const bg = feedback ? (feedback.correct ? colors.leafWash : colors.rustWash) : colors.page;
 
   return (
     <Pressable
       style={[styles.container, { backgroundColor: bg }]}
       onPress={() => feedback && !feedback.correct && next(state)}
     >
+      <SkyStrip />
       <View style={styles.header}>
         <Text style={styles.stat}>
           {state.correct}/{state.total}
@@ -82,21 +85,28 @@ export default function GenderScreen() {
       </View>
 
       <View style={styles.card}>
-        {isReview && !feedback && <Text style={styles.reviewTag}>review</Text>}
-        <Text style={styles.word} adjustsFontSizeToFit numberOfLines={1}>
-          {word.word}
-        </Text>
-        <View style={styles.feedbackBox}>
-          {feedback && (
-            <>
-              <Text style={[styles.answer, { color: feedback.correct ? '#1e7b3a' : '#b42318' }]}>
-                {feedback.correct ? '✓ ' : '✗ '}
-                {withIndefinite(word)}
-              </Text>
-              <Text style={styles.english}>{word.english}</Text>
-              {!feedback.correct && <Text style={styles.hint}>Tap anywhere to continue</Text>}
-            </>
-          )}
+        <View style={styles.sheet}>
+          <Sun size={84} style={styles.sun} />
+          <View style={styles.tagRow}>
+            {isReview && !feedback && <Text style={styles.reviewTag}>review</Text>}
+          </View>
+          <Text style={styles.word} adjustsFontSizeToFit numberOfLines={1}>
+            {word.word}
+          </Text>
+          <View style={styles.feedbackBox}>
+            {feedback && (
+              <>
+                <Text
+                  style={[styles.answer, { color: feedback.correct ? colors.leafDeep : colors.rust }]}
+                >
+                  {feedback.correct ? '✓ ' : '✗ '}
+                  {withIndefinite(word)}
+                </Text>
+                <Text style={styles.english}>{word.english}</Text>
+                {!feedback.correct && <Text style={styles.hint}>Tap anywhere to continue</Text>}
+              </>
+            )}
+          </View>
         </View>
       </View>
 
@@ -124,33 +134,63 @@ export default function GenderScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 64, paddingBottom: 24, paddingHorizontal: 24 },
   header: { flexDirection: 'row', justifyContent: 'space-between' },
-  stat: { fontSize: 16, color: '#555' },
+  stat: { fontSize: 16, fontWeight: '700', color: colors.white },
   card: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  sheet: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    backgroundColor: colors.paper,
+    borderRadius: 28,
+    borderWidth: 2.5,
+    borderColor: colors.ink,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 6,
+    boxShadow: paperShadow(6),
+    transform: [{ rotate: '-1.5deg' }],
+  },
+  sun: { position: 'absolute', top: -44, right: -26 },
+  tagRow: { height: 30, justifyContent: 'center' },
   reviewTag: {
     fontSize: 13,
-    color: '#8a5a00',
-    backgroundColor: '#fff3d6',
-    paddingHorizontal: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: colors.wood,
+    backgroundColor: colors.sunWash,
+    borderWidth: 2,
+    borderColor: colors.sun,
+    paddingHorizontal: 12,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 12,
+    transform: [{ rotate: '2deg' }],
   },
-  word: { fontSize: 56, fontWeight: '600', color: '#111' },
-  feedbackBox: { height: 110, alignItems: 'center', justifyContent: 'flex-start', marginTop: 16 },
-  answer: { fontSize: 28, fontWeight: '600' },
-  english: { fontSize: 18, color: '#666', marginTop: 6 },
-  hint: { fontSize: 14, color: '#999', marginTop: 14 },
+  word: { fontSize: 56, fontWeight: '800', color: colors.ink },
+  feedbackBox: { height: 110, alignItems: 'center', justifyContent: 'flex-start', marginTop: 12 },
+  answer: { fontSize: 28, fontWeight: '800' },
+  english: { fontSize: 18, fontStyle: 'italic', color: colors.inkSoft, marginTop: 6 },
+  hint: { fontSize: 14, color: colors.muted, marginTop: 14 },
   buttons: { flexDirection: 'row', gap: 16 },
   button: {
     flex: 1,
     height: 110,
-    borderRadius: 20,
+    borderRadius: 28,
+    borderWidth: 3,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: paperShadow(5),
   },
-  m: { backgroundColor: '#2f6fde' },
-  f: { backgroundColor: '#d6336c' },
-  pressed: { opacity: 0.7 },
-  buttonText: { fontSize: 44, fontWeight: '700', color: '#fff' },
+  m: { backgroundColor: colors.sky, transform: [{ rotate: '-2deg' }] },
+  f: { backgroundColor: colors.beak, transform: [{ rotate: '2deg' }] },
+  pressed: { boxShadow: paperShadow(1), transform: [{ translateY: 4 }] },
+  buttonText: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: colors.white,
+    textShadowColor: colors.ink,
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
 });

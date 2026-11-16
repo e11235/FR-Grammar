@@ -8,7 +8,9 @@ import {
   QUESTION_KEY_SET,
   QUESTION_KEYS,
 } from '../conjugation';
+import { SkyStrip, Sun } from '../components/Decor';
 import { initialState, pickNext, recordAnswer, State } from '../scheduler';
+import { colors, paperShadow } from '../theme';
 import { useQuizState } from '../useQuizState';
 
 const STORAGE_KEY = 'fr-conjugaison-state-v1';
@@ -69,13 +71,14 @@ export default function ConjugationScreen() {
       },
     ]);
 
-  const bg = answered ? (correct ? '#e7f7ec' : '#fdecec') : '#fff';
+  const bg = answered ? (correct ? colors.leafWash : colors.rustWash) : colors.page;
 
   return (
     <Pressable
       style={[styles.container, { backgroundColor: bg }]}
       onPress={() => answered && !correct && next(state)}
     >
+      <SkyStrip />
       <View style={styles.header}>
         <Text style={styles.stat}>
           {state.correct}/{state.total}
@@ -87,17 +90,20 @@ export default function ConjugationScreen() {
       </View>
 
       <View style={styles.card}>
-        <View style={styles.tagRow}>
-          {isReview && !answered && <Text style={styles.reviewTag}>review</Text>}
+        <View style={styles.sheet}>
+          <Sun size={72} style={styles.sun} />
+          <View style={styles.tagRow}>
+            {isReview && !answered && <Text style={styles.reviewTag}>review</Text>}
+          </View>
+          <Text style={styles.verb} adjustsFontSizeToFit numberOfLines={1}>
+            {capitalize(question.verb.inf)}
+          </Text>
+          <Text style={styles.english}>{question.verb.en}</Text>
+          <Text style={styles.prompt}>
+            {person.label} ({person.pronoun})
+          </Text>
+          <Text style={styles.tense}>{question.tense}</Text>
         </View>
-        <Text style={styles.verb} adjustsFontSizeToFit numberOfLines={1}>
-          {capitalize(question.verb.inf)}
-        </Text>
-        <Text style={styles.english}>{question.verb.en}</Text>
-        <Text style={styles.prompt}>
-          {person.label} ({person.pronoun})
-        </Text>
-        <Text style={styles.tense}>{question.tense}</Text>
       </View>
 
       <View style={styles.options}>
@@ -136,36 +142,68 @@ export default function ConjugationScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 64, paddingBottom: 16, paddingHorizontal: 24 },
   header: { flexDirection: 'row', justifyContent: 'space-between' },
-  stat: { fontSize: 16, color: '#555' },
+  stat: { fontSize: 16, fontWeight: '700', color: colors.white },
   card: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  tagRow: { height: 34 },
+  sheet: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    backgroundColor: colors.paper,
+    borderRadius: 28,
+    borderWidth: 2.5,
+    borderColor: colors.ink,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 20,
+    boxShadow: paperShadow(6),
+    transform: [{ rotate: '1.2deg' }],
+  },
+  sun: { position: 'absolute', top: -38, left: -22 },
+  tagRow: { height: 34, justifyContent: 'center' },
   reviewTag: {
     fontSize: 13,
-    color: '#8a5a00',
-    backgroundColor: '#fff3d6',
-    paddingHorizontal: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: colors.wood,
+    backgroundColor: colors.sunWash,
+    borderWidth: 2,
+    borderColor: colors.sun,
+    paddingHorizontal: 12,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: 'hidden',
+    transform: [{ rotate: '-2deg' }],
   },
-  verb: { fontSize: 48, fontWeight: '600', color: '#111' },
-  english: { fontSize: 16, color: '#888', marginTop: 4 },
-  prompt: { fontSize: 20, color: '#333', marginTop: 20 },
-  tense: { fontSize: 22, fontWeight: '600', color: '#2f6fde', marginTop: 6 },
+  verb: { fontSize: 48, fontWeight: '800', color: colors.ink },
+  english: { fontSize: 16, fontStyle: 'italic', color: colors.muted, marginTop: 4 },
+  prompt: { fontSize: 20, fontWeight: '600', color: colors.inkSoft, marginTop: 20 },
+  tense: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.white,
+    backgroundColor: colors.leaf,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginTop: 8,
+    transform: [{ rotate: '-1.5deg' }],
+  },
   options: { gap: 12 },
   option: {
     height: 60,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#d8dce3',
-    backgroundColor: '#fff',
+    borderRadius: 18,
+    borderWidth: 2.5,
+    borderColor: colors.ink,
+    backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: paperShadow(4),
   },
-  optionCorrect: { backgroundColor: '#1e7b3a', borderColor: '#1e7b3a' },
-  optionWrong: { backgroundColor: '#b42318', borderColor: '#b42318' },
-  optionText: { fontSize: 22, fontWeight: '500', color: '#111' },
-  optionTextOnColor: { color: '#fff' },
-  pressed: { opacity: 0.6 },
-  hint: { fontSize: 14, color: '#999', textAlign: 'center', marginTop: 4 },
+  optionCorrect: { backgroundColor: colors.leaf },
+  optionWrong: { backgroundColor: colors.rust },
+  optionText: { fontSize: 22, fontWeight: '700', color: colors.ink },
+  optionTextOnColor: { color: colors.white },
+  pressed: { boxShadow: paperShadow(1), transform: [{ translateY: 3 }], backgroundColor: colors.sunWash },
+  hint: { fontSize: 14, color: colors.muted, textAlign: 'center', marginTop: 4 },
 });
